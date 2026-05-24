@@ -1,0 +1,38 @@
+# Optional PostgreSQL variant for production
+# By default the app uses SQLite (zero external deps needed)
+# To use Postgres: update DATABASE_URL in backend/.env and schema.prisma provider
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: crm_platform
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: crm_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://crm_user:crm_password@postgres:5432/crm_platform
+      JWT_SECRET: your_production_secret_here
+      PORT: 3001
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '5173:80'
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

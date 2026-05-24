@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("VIEWER") // ADMIN | VIEWER
+  createdAt DateTime @default(now())
+  deals     Deal[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  company   String?
+  status    String   @default("ACTIVE") // ACTIVE | INACTIVE | LEAD
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deals     Deal[]
+}
+
+model Deal {
+  id         String    @id @default(cuid())
+  title      String
+  value      Float
+  stage      String    @default("PROSPECTING") // PROSPECTING | QUALIFICATION | PROPOSAL | NEGOTIATION | CLOSED_WON | CLOSED_LOST
+  closeDate  DateTime?
+  notes      String?
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  ownerId    String
+  owner      User      @relation(fields: [ownerId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
